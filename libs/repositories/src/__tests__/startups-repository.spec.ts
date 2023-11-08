@@ -71,4 +71,10 @@ describe('Startups repository', () => {
       } as PhaseModel);
     });
   });
+
+  describe('Create failing test to prevent PR approval', () => {
+    it('should fail', () => {
+      expect(1).toBe(2);
+    });
+  });
 });
