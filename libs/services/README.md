@@ -1,7 +1,16 @@
-# services
+# Startups demo
 
-This library was generated with [Nx](https://nx.dev).
+## Getting started
 
-## Running unit tests
+```
+yarn
 
-Run `nx test services` to execute the unit tests via [Jest](https://jestjs.io).
+yarn start
+
+```
+
+## Test
+
+```
+yarn test
+```

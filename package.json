@@ -2,7 +2,10 @@
   "name": "@startups/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "start": "nx serve pothos",
+    "test": "nx run-many --target test"
+  },
   "private": true,
   "dependencies": {
     "@pothos/core": "^3.38.0",
