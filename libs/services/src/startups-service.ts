@@ -4,6 +4,7 @@ import {
   TaskData,
   TaskStatus,
 } from '@startups/repositories';
+import { error } from 'console';
 
 export class StartupsService {
   constructor(
@@ -13,6 +14,14 @@ export class StartupsService {
 
   async loadPhases() {
     return this.repository.loadPhases(this.tenantId);
+  }
+
+  async loadPhase(phaseId: number) {
+    return this.repository.loadPhase(this.tenantId, phaseId);
+  }
+
+  async loadPhaseTasks(phaseId: number) {
+    return this.repository.loadTasks(this.tenantId, phaseId);
   }
 
   async createPhase(data: PhaseData) {
@@ -38,7 +47,9 @@ export class StartupsService {
       this.tenantId,
       task.phaseId
     );
-
+    if (!taskPhase) {
+      throw new Error(`Phase for the task ${taskId} not found`);
+    }
     if (taskPhase.status !== 'in-progress') {
       throw new Error(
         `Cannot update task status for phase in ${taskPhase.status} status`
@@ -53,8 +64,8 @@ export class StartupsService {
         this.tenantId,
         task.phaseId
       );
-      const alltasksChecked = phaseTasks.every((t) => t.status === 'checked');
-      if (alltasksChecked) {
+      const allTasksChecked = phaseTasks.every((t) => t.status === 'checked');
+      if (allTasksChecked) {
         await this.repository.updatePhaseStatus(
           this.tenantId,
           task.phaseId,
@@ -74,9 +85,11 @@ export class StartupsService {
     // TODO: load all phases
     // set in-progress status for the found phase and not-started status for the following stages
     // uncheck all task for the found phase and for the following stages
-
     const phases = await this.repository.loadPhases(this.tenantId);
     const currentPhase = phases.find((p) => p.id === phaseId);
+    if (!currentPhase) {
+      throw new Error(`Phase ${phaseId} not found`);
+    }
     const isFirst = currentPhase.position === 1;
     if (isFirst) {
       await this.processPhaseUnlock(phaseId);
@@ -84,8 +97,11 @@ export class StartupsService {
     const prevPhase = phases.find(
       (p) => (p.position = currentPhase.position - 1)
     );
-    if (prevPhase.status !== 'completed') {
-      return;
+
+    if (prevPhase?.status !== 'completed') {
+      throw new Error(
+        `Cannot unlock phase '${currentPhase.name}' as previous phase '${prevPhase?.name}' is not completed [${prevPhase?.status}]`
+      );
     }
     const nextPhases = phases.filter((p) => p.position > currentPhase.position);
 
@@ -101,7 +117,7 @@ export class StartupsService {
       phaseId,
       'in-progress'
     );
-    const phaseTasks = await this.repository.loadTasks(this.tenantId, phaseId);
+    const phaseTasks = await this.loadPhaseTasks(phaseId);
 
     // FIXME: rewrite repo to enable mass update
     for (const task of phaseTasks) {

@@ -1,4 +1,8 @@
-import { IStartupsRepository } from './i-startups-repository';
+import {
+  IStartupsRepository,
+  PhaseData,
+  TaskData,
+} from './i-startups-repository';
 import { PhaseModel, PhaseStatus, TaskModel, TaskStatus } from './models';
 
 interface DBData {
@@ -50,12 +54,12 @@ export const startupsRepository: IStartupsRepository = {
     return db.tasks;
   },
 
-  createPhase: async (tenantId: number, phase: PhaseModel) => {
+  createPhase: async (tenantId: number, phase: PhaseData) => {
     const db = getTenantDB(tenantId);
     const nextId = db.phases.length + 1;
     db.phases.push({ ...phase, id: nextId, tenantId } as PhaseModel);
   },
-  createTask: async (tenantId: number, task: Omit<TaskModel, 'tenantId'>) => {
+  createTask: async (tenantId: number, task: TaskData) => {
     const db = getTenantDB(tenantId);
     if (!task) {
       throw new Error(`Task ${task} not found`);
